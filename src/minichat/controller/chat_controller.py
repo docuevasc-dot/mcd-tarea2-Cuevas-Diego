@@ -150,5 +150,21 @@ class ChatController(Observable):
         self._notify(Event.EXPORT_DONE, {"path": path})
 
     def _validate_text(self, text: Optional[str]) -> str:
-        """Return the stripped text, or '' when it is None/blank."""
-        return (text or "").strip()
+        """Validate and truncate input text to a maximum of 2000 characters."""
+        if not text or not text.strip():
+            raise ValueError("Text cannot be empty.")
+        return text.strip()[:2000]
+    def _generate_reply(self) -> tuple[str, int]:
+        """Call the backend, measure latency in milliseconds, and return (reply, elapsed_ms)."""
+        import time
+        start_time = time.time()
+        reply = self._backend.generate(self._session.all(), self._config)
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        return reply, elapsed_ms
+    def _build_meta(self, text: str, reply: str, elapsed_ms: int) -> dict:
+        """Build the metadata dictionary for the interaction, including latency."""
+        return {
+            "latency_ms": elapsed_ms,
+            "model": getattr(self._backend, "name", "unknown"),
+        }
+    
