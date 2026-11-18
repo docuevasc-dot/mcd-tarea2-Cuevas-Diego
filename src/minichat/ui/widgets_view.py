@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import Any, List, Tuple
 
+from dataclasses import replace
+from minichat.model.generation_config import GenerationConfig
+
 import ipywidgets as widgets
 from IPython.display import HTML, clear_output, display
 
@@ -136,20 +139,15 @@ class WidgetsView(Observer):
             return
 
         if self.role.value == Role.USER.value:
-            self._ctl.set_generation(
-                float(self.temp.value),
-                float(self.topp.value),
-                int(self.topk.value),
-                int(self.maxnt.value),
-                900,
-            )
-            self._ctl.send_user(text)
-        elif self.role.value == Role.ASSISTANT.value:
-            self._ctl.add_assistant(text)
-        else:
-            self._ctl.add_system(text)
-
-        self.text.value = ""
+         cfg = replace(
+             self._ctl.config,
+             temperature=float(self.temp.value),
+             top_p=float(self.topp.value),
+             top_k=int(self.topk.value),
+             max_new_tokens=int(self.maxnt.value),
+         )
+         self._ctl.set_generation(cfg)
+         self._ctl.send_user(text)
 
     def _on_delete_selected(self, _: Any) -> None:
         idx = self.sel_index.value
