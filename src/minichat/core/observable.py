@@ -58,3 +58,10 @@ class Observable:
                 fn(event, data)
             except Exception as exc:
                 logger.debug("Observer %r failed on event %r: %s", fn, event, exc)
+    def get_observer_count(self) -> int:
+        """Return the number of subscribed observers."""
+        return len(self._observers)
+
+    def has_observers(self) -> bool:
+        """Check if there are any subscribed observers."""
+        return len(self._observers) > 0
